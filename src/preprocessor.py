@@ -2,6 +2,7 @@ import string
 
 import pandas as pd
 import numpy as np
+import re
 
 class Preprocessor:
     """
@@ -55,4 +56,8 @@ class Preprocessor:
             title = title.replace(key, val)
 
         title = title.split(' ')
-        return np.array(filter(lambda t: t.lower() not in self.exclude_words, title))
+        return np.array(filter(lambda t: t.lower() not in self.exclude_words and not self.__has_numbers(t), title))
+
+    @staticmethod
+    def __has_numbers(inp):
+        return bool(re.search(r'\d', inp))
