@@ -1,5 +1,7 @@
+import string
+
 import pandas as pd
-import warnings
+import numpy as np
 
 class Preprocessor:
     """
@@ -49,7 +51,8 @@ class Preprocessor:
     def __format_title(self, title):
         title = title.lower()
         for key, val in self.phrase_map.items():
+            title = title.translate(None, string.punctuation)
             title = title.replace(key, val)
 
         title = title.split(' ')
-        return filter(lambda t: t.lower() not in self.exclude_words, title)
+        return np.array(filter(lambda t: t.lower() not in self.exclude_words, title))

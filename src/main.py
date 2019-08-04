@@ -3,8 +3,10 @@ This project categorizes Canadian federal legislation
 """
 
 from preprocessor import *
+from trainer import *
 
-US_BILLS_RAW = '../data/us_bills.csv'
+US_BILLS_RAW = '/data/us_bills.csv'
+CATEGORIES_MAP = 'data/classes.csv'
 WORD_MAP = {
     'congressional': 'parliamentary',
     'congress': 'parliament',
@@ -42,4 +44,7 @@ if __name__ == "__main__":
                            exclude_words=EXCLUDE_WORDS.split(' '),
                            phrase_map=WORD_MAP)
     training_data = preproc.do_preprocess()
+
+    trainer = Trainer(training_data=training_data, categories_url=CATEGORIES_MAP)
+    trainer.train()
 
