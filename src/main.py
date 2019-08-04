@@ -47,4 +47,5 @@ if __name__ == "__main__":
 
     trainer = Trainer(training_data=training_data, categories_url=CATEGORIES_MAP)
     trainer.train()
+    trainer.write_bows_csv()
 

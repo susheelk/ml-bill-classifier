@@ -27,10 +27,17 @@ class Trainer:
         for ind, cat in enumerate(self.categories):
             cat_exs = td.loc[td['Major'] == ind+1]
             words_arr = np.array(cat_exs['Title'].values.flatten())
-            self.__add_to_bow(ind, words_arr)
+            [self.__add_to_bow(ind, word) for word in words_arr]
+
+    def write_bows_csv(self):
+        for num, bow_dict in enumerate(self.bow_dicts):
+            cat_name = self.categories[num + 1]
+            df = pd.DataFrame.from_dict(bow_dict, orient='index', columns=['Occurrences'])
+            df.to_csv(path_or_buf='data/out/' + cat_name + '.csv', index=True, index_label='Word')
 
     def __add_to_bow(self, dict_ind, word):
         self.bow_dicts[dict_ind][word] += 1
+
 
     def __read_categories(self):
         df = pd.read_csv(self.categories_url, delimiter=',')
