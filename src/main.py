@@ -24,6 +24,7 @@ WORD_MAP = {
     'united states': 'canada',
     'american': 'canadian',
     'defense': 'defence',
+    'federal reserve system': 'bank of canada',
     'federal bureau of investigation': 'royal canadian mounted police',
     'central intelligence agency': 'canadian security intelligence service',
     'internal revenue service': 'canada revenue agency',
@@ -35,7 +36,7 @@ WORD_MAP = {
     'state of alaska': 'yukon territory',
     'color': 'colour'
 }
-EXCLUDE_WORDS = 'a an bill to for that to the is he act of from'
+EXCLUDE_WORDS = 'a an bill to for that to the is he act of from and in by as other or at as such be'
 
 # American to Canadian translations
 
@@ -45,9 +46,9 @@ if __name__ == "__main__":
                            exclude_words=EXCLUDE_WORDS.split(' '),
                            phrase_map=WORD_MAP)
     training_data = preproc.do_preprocess()
-    # training_data = training_data.head(10000)
+    training_data = training_data.head(100000)
 
     trainer = Trainer(training_data=training_data, categories_url=CATEGORIES_MAP)
     trainer.train()
-    trainer.write_bows_csv()
+    trainer.write_model_csv()
 

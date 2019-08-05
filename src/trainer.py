@@ -3,6 +3,7 @@ import numpy as np
 import os
 from category import Category
 
+OUTPUT_DIR = 'data/output_model/'
 
 class Trainer:
     """
@@ -31,28 +32,56 @@ class Trainer:
         Trains the model
         """
         print 'Constructing models...'
-        self.construct_bows()
+        self.__construct_bows()
+        print 'Vocab size: ' + str(self.vocabulary_size)
+        print 'Calculating category denoms...'
+        self.__calculate_cat_denoms()
 
-    def construct_bows(self):
+    def __construct_bows(self):
         td = self.training_data
+        num_examples = float(td.size)
 
         for ind, category in enumerate(self.categories):
             cat_exs = td.loc[td['Major'] == ind+1]
             if (cat_exs.size != 0) and (str(category.name) != 'nan'):
                 words_arr = np.hstack(np.array(cat_exs['Title'].values))
                 [self.__add_to_bow(ind, word) for word in words_arr]
-                print '\t' + category.name
 
-    def write_bows_csv(self):
-        if not os.path.isdir('data/out/'):
-            os.mkdir('data/out')
+                # Calculate prior probability of this category
+                category.prior_prob = float(cat_exs.size) / num_examples
+
+                print '\t' + category.name + '(' + str(ind) + '/' + str(len(self.categories)) + ')'
+        self.vocabulary_size = len(self.vocabulary)
+
+    def __calculate_cat_denoms(self):
+        for category in self.categories:
+            if str(category.name) == 'nan':
+                continue
+            bow_dict = category.bow_dict
+            count = sum(bow_dict.values())
+            category.word_prob_denom = count + self.vocabulary_size + 1
+            print '\t' + category.name
+
+    def write_model_csv(self):
+        out_dir = OUTPUT_DIR + 'categories/'
+        if not os.path.isdir(out_dir):
+            os.mkdir(OUTPUT_DIR)
+            os.mkdir(out_dir)
 
         for num, category in enumerate(self.categories):
-
             cat_name = category.name
             if str(cat_name) != 'nan':
                 df = pd.DataFrame.from_dict(category.bow_dict, orient='index', columns=['Occurrences'])
-                df.to_csv(path_or_buf='data/out/' + cat_name + '.csv', index=True, index_label='Word')
+                df.to_csv(path_or_buf=out_dir + cat_name + '.csv', index=True, index_label='Word')
+
+        denoms = dict([(cat.name, cat.word_prob_denom) for cat in self.categories])
+        priors = dict([(cat.name, cat.prior_prob) for cat in self.categories])
+
+        denom_df = pd.DataFrame.from_dict(denoms, orient='index', columns=['Denoms'])
+        priors_df = pd.DataFrame.from_dict(priors, orient='index', columns=['Priors'])
+
+        denom_df.to_csv(path_or_buf=OUTPUT_DIR + 'denoms.csv', index=True, index_label='Category')
+        priors_df.to_csv(path_or_buf=OUTPUT_DIR + 'priors.csv', index=True, index_label='Category')
 
     def __add_to_bow(self, cat_ind, word):
         if word in self.categories[cat_ind].bow_dict.keys():
