@@ -47,7 +47,7 @@ def read_from_disk():
             bow_dict = None  # prevent unwanted reference leaks
             bow_dict = get_cat_bow_file(categories_path + filename)
             name = filename[:-4]
-            categories.append(Category(name=name, word_prob_denom=denoms[name], prior_prob=name, bow_dict=bow_dict))
+            categories.append(Category(name=name, cat_id=-1, word_prob_denom=denoms[name], prior_prob=name, bow_dict=bow_dict))
             print '\t' + name
     return categories
 
@@ -57,6 +57,7 @@ def get_all_examples():
                            exclude_words=EXCLUDE_WORDS.split(' '),
                            phrase_map=WORD_MAP)
     return preproc.do_preprocess()
+
 
 def train(training_data):
     """
@@ -69,13 +70,31 @@ def train(training_data):
     return trainer.get_output_model()
 
 
+def test(test_data, predictor):
+    predicted_majors = []
+    predicted_cat_titles = []
+
+    for index, row in test_data.iterrows():
+        title_words = row['Title']
+        predicted_cat = predictor.predict_category(title_words)
+        predicted_majors.append(predicted_cat.cat_id)
+        predicted_cat_titles.append(predicted_cat.name)
+
+    test_data = test_data.assign(PredictedMajor=predicted_majors, PredictedMajorTitle=predicted_cat_titles)
+    print "test"
+    return test_data
+
+
 if __name__ == "__main__":
     output_model = None
     test_data = None
 
     examples = get_all_examples()
-    train_len = int(float(len(examples)) * float(TRAIN_PERCENTAGE) / 100)
-    test_data = examples.tail(len(examples) - train_len)
+    # train_len = int(float(len(examples)) * float(TRAIN_PERCENTAGE) / 100)
+    # test_data = examples.tail(len(examples) - train_len)
+
+    train_len = 30000
+    test_data = examples.tail(10)
 
     if TRAIN:
         training_data = examples.head(train_len)
@@ -84,5 +103,10 @@ if __name__ == "__main__":
         output_model = read_from_disk()
 
     predictor = NaiveBayesPredictor(output_model)
+    #test(test_data, predictor)
+
+    while True:
+        test_in = raw_input("\nTitle: ").split(' ')
+        print predictor.predict_category(test_in).name
 
 

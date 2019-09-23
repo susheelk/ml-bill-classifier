@@ -34,5 +34,5 @@ WORD_MAP = {
     'color': 'colour'
 }
 
-EXCLUDE_WORDS = 'a an bill to for that to the is he act of from and in by as other or at as such be'
+EXCLUDE_WORDS = 'a an bill to for that to the is he act of from and in by as other or at as such be act amend'
 TRAIN = True  # Setting to true will retrain

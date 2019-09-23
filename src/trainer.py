@@ -98,7 +98,7 @@ class Trainer:
         df = pd.read_csv(self.categories_url, delimiter=',')
 
         category_names = list(df['Category'])
-        self.categories = [Category(name=x) for x in category_names]
+        self.categories = [Category(name=name, cat_id=ind) for ind, name in enumerate(category_names)]
         self.num_categories = len(self.categories)
         # self.bow_dicts = [{} for i in range(self.num_categories)]
 
