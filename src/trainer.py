@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 import os
 from category import Category
+from output_model import OutputModel
 
 OUTPUT_DIR = 'data/output_model/'
+
 
 class Trainer:
     """
@@ -11,11 +13,11 @@ class Trainer:
     """
 
     training_data = pd.DataFrame()  # type: pd.DataFrame
-    #bow_dicts = []  # type: list[dict[str, int]]
+    # bow_dicts = []  # type: list[dict[str, int]]
 
     categories = []  # type: list[Category]
 
-    categories_url = ''  # type: str
+    categories_url = ''  # type: # str
     num_categories = 0  # type: int
     vocabulary = set()  # type: set[str]
     vocabulary_size = 0  # type: int
@@ -45,12 +47,13 @@ class Trainer:
             cat_exs = td.loc[td['Major'] == ind+1]
             if (cat_exs.size != 0) and (str(category.name) != 'nan'):
                 words_arr = np.hstack(np.array(cat_exs['Title'].values))
+                category.bow_dict = {}  # prevent unwanted references
                 [self.__add_to_bow(ind, word) for word in words_arr]
 
                 # Calculate prior probability of this category
                 category.prior_prob = float(cat_exs.size) / num_examples
 
-                print '\t' + category.name + '(' + str(ind) + '/' + str(len(self.categories)) + ')'
+                print '\t' + category.name + '\t(' + str(ind+1) + '/' + str(len(self.categories)) + ')'
         self.vocabulary_size = len(self.vocabulary)
 
     def __calculate_cat_denoms(self):
@@ -95,6 +98,9 @@ class Trainer:
         df = pd.read_csv(self.categories_url, delimiter=',')
 
         category_names = list(df['Category'])
-        self.categories = [Category(x) for x in category_names]
+        self.categories = [Category(name=x) for x in category_names]
         self.num_categories = len(self.categories)
         # self.bow_dicts = [{} for i in range(self.num_categories)]
+
+    def get_output_model(self):
+        return OutputModel(self.categories, self.vocabulary_size)
